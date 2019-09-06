@@ -1,0 +1,11 @@
+{
+  "name": "kokoro.desktop",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "ssh://git@github.com/mohemohe/kokoro.desktop.git",
+  "author": "mohemohe <mohemohe@ghippos.net>",
+  "license": "WTFPL",
+  "devDependencies": {
+    "typescript": "^3.6.2"
+  }
+}
