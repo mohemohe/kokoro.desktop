@@ -66,7 +66,7 @@ export default class  Router extends React.Component<IProps, IState> {
 						<SyncedRouter history={this.props.RouterStore!.history}>
 							<Switch>
 								<Route path={"/"} component={Null} exact={true}/>
-								<Route path={"/channels/:id"} component={Timeline}/>
+								<Route path={"/channels/:id"} component={Timeline} exact={true}/>
 							</Switch>
 						</SyncedRouter>
 					</div>
