@@ -5,7 +5,9 @@ import {style} from "typestyle";
 import ChannelStore from "../stores/ChannelStore";
 import {FiHash, FiLock, FiMail} from "react-icons/fi";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
+import {InfiniteLoader, AutoSizer,List} from "react-virtualized";
 import MessageStore from "../stores/MessageStore";
+import {VirtualizedOverlayScroller} from "../components/VirtualizedOverlayScroller";
 
 const styles = {
 	root: style({
@@ -29,10 +31,6 @@ const styles = {
 		padding: "2px 1rem",
 		color: "#898989",
 		fontWeight: "bold",
-	}),
-	channels: style({
-		flex: 1,
-		display: "flex",
 	}),
 	channel: style({
 		display: "flex",
@@ -67,60 +65,64 @@ interface IProps extends React.ClassAttributes<{}> {
 }
 
 interface IState extends React.ComponentState {
-	collapse: any;
-	selected: string;
+	scrollTop: number;
 }
 
 @inject("ChannelStore", "MessageStore")
 @observer
 export class Sidebar extends React.Component<IProps, IState> {
+	constructor(props: IProps) {
+		super(props);
+
+		this.state = {
+			scrollTop: 0,
+		};
+	}
+
+
 	public componentDidMount() {
 		this.props.ChannelStore!.fetchChannels();
 	}
 
 	public render() {
+		const items = [
+			<div className={styles.channelsHeader}>
+				Channels
+			</div>,
+			...this.props.ChannelStore!.memberships.map((membership) => {
+				const classNames = [styles.channel];
+				if (membership.channel.id === this.props.MessageStore!.lastId) {
+					classNames.push(styles.activeChannel);
+				}
+
+				let icon;
+				if (membership.channel.kind.includes("public")) {
+					icon = <FiHash/>;
+				} else if (membership.channel.kind.includes("private")) {
+					icon = <FiLock/>;
+				} else if (membership.channel.kind.includes("direct")) {
+					icon = <FiMail/>;
+				}
+
+				return (
+					<Link to={`/channels/${membership.channel.id}`} className={classNames.join(" ")} key={membership.channel.id}>
+						<div className={styles.channelName}>
+							<div className={styles.icon}>
+								{icon}
+							</div>
+							{membership.channel.channel_name}
+						</div>
+					</Link>
+				)
+			})
+		];
+
 		return (
 			<div className={styles.root}>
 				<div className={styles.sidebarHeader}>
 					kokoro.desktop
 				</div>
-				<div className={styles.channels}>
-					<OverlayScrollbarsComponent options={{className: "os-theme-light", scrollbars: {autoHide: "leave", autoHideDelay: 300}}}>
-						<div>
-							<div className={styles.channelsHeader}>
-								Channels
-							</div>
-							{
-								this.props.ChannelStore!.memberships.map((membership) => {
-									const classNames = [styles.channel];
-									if (membership.channel.id === this.props.MessageStore!.lastId) {
-										classNames.push(styles.activeChannel);
-									}
-
-									let icon;
-									if (membership.channel.kind.includes("public")) {
-										icon = <FiHash/>;
-									} else if (membership.channel.kind.includes("private")) {
-										icon = <FiLock/>;
-									} else if (membership.channel.kind.includes("direct")) {
-										icon = <FiMail/>;
-									}
-
-									return (
-										<Link to={`/channels/${membership.channel.id}`} className={classNames.join(" ")} key={membership.channel.id}>
-											<div className={styles.channelName}>
-												<div className={styles.icon}>
-													{icon}
-												</div>
-												{membership.channel.channel_name}
-											</div>
-										</Link>
-									)
-								})
-							}
-						</div>
-					</OverlayScrollbarsComponent>
-				</div>
+				<VirtualizedOverlayScroller items={items} className={"os-theme-light"}/>
 			</div>
 		);
 	}

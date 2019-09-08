@@ -33,7 +33,7 @@ export default class Timeline extends React.Component<IProps, IState> {
 		const messages = this.props.MessageStore!.messages[this.props.match.params.id] || [];
 		return (
 			<>
-				{messages.map((message) => <Message message={message} key={message.id}/>)}
+				{messages.slice().reverse().map((message) => <Message message={message} key={message.id}/>)}
 			</>
 		);
 	}
