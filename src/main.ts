@@ -1,5 +1,5 @@
 import path from "path";
-import { app, BrowserWindow } from "electron";
+import {app, BrowserWindow} from "electron";
 
 app.on("ready", () => {
 	const window = new BrowserWindow({

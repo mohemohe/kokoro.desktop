@@ -4,6 +4,9 @@ import Pripara, {Events} from "../infrastructures/kokoro.io";
 import BaseStore, {Mode, State} from "./BaseStore";
 
 export default class ChannelStore extends BaseStore {
+	@observable
+	public memberships: IMembershipEntity[];
+
 	constructor() {
 		super();
 
@@ -11,9 +14,6 @@ export default class ChannelStore extends BaseStore {
 
 		Pripara.on(Events.OnSDKReady, () => this._fetchChannels());
 	}
-
-	@observable
-	public memberships: IMembershipEntity[];
 
 	@action
 	public async fetchChannels() {

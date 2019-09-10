@@ -43,7 +43,9 @@ const styles = {
 
 @inject("RouterStore", "AuthStore")
 @observer
-export default class  Router extends React.Component<IProps, IState> {
+export default class Router extends React.Component<IProps, IState> {
+	private history: MobxReactRouter.SynchronizedHistory;
+
 	constructor(props: IProps, state: IState) {
 		super(props, state);
 
@@ -54,8 +56,6 @@ export default class  Router extends React.Component<IProps, IState> {
 	public async componentDidMount() {
 		this.props.AuthStore!.restoreLogin();
 	}
-
-	private history: MobxReactRouter.SynchronizedHistory;
 
 	public render() {
 		return (

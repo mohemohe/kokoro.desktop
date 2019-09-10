@@ -7,7 +7,7 @@ export interface IProps {
 }
 
 export class SyncedRouter extends React.Component<IProps, {}> {
-	render () {
+	public render() {
 		return (
 			<Router history={this.props.history} children={this.props.children}/>
 		)

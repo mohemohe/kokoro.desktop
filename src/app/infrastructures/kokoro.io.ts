@@ -8,20 +8,20 @@ export enum Events {
 }
 
 class Pripara extends EventEmitter {
-	public initializeClient(accessToken: string) {
-		_client = new global.kokoro.io({
-			accessToken,
-			autoReconnect: true,
-		});
-		this.emit(Events.OnSDKReady);
-	}
-
 	public get client() {
 		return _client;
 	}
 
 	public get initialized() {
 		return _client != null;
+	}
+
+	public initializeClient(accessToken: string) {
+		_client = new global.kokoro.io({
+			accessToken,
+			autoReconnect: true,
+		});
+		this.emit(Events.OnSDKReady);
 	}
 }
 

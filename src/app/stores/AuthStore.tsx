@@ -22,6 +22,25 @@ export default class AuthStore extends BaseStore {
 		this.userInfo = {} as IProfileEntity;
 	}
 
+	@computed
+	public get name() {
+		if (this.userInfo && this.userInfo.display_name) {
+			return this.userInfo.display_name;
+		} else {
+			return "";
+		}
+	}
+
+	@computed
+	public get avatar() {
+		if (this.userInfo && this.userInfo.avatar) {
+			return this.userInfo.avatar;
+		} else {
+			// REF: https://qiita.com/CloudRemix/items/92e68a048a0da93ed240
+			return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=";
+		}
+	}
+
 	@action
 	public async login(accessToken: string) {
 		this.setMode(Mode.LOGIN);
@@ -71,24 +90,5 @@ export default class AuthStore extends BaseStore {
 
 		this.userInfo = me;
 		this.authStatus = AuthStatus.Authorized;
-	}
-
-	@computed
-	public get name() {
-		if (this.userInfo && this.userInfo.display_name) {
-			return this.userInfo.display_name;
-		} else {
-			return "";
-		}
-	}
-
-	@computed
-	public get avatar() {
-		if (this.userInfo && this.userInfo.avatar) {
-			return this.userInfo.avatar;
-		} else {
-			// REF: https://qiita.com/CloudRemix/items/92e68a048a0da93ed240
-			return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=";
-		}
 	}
 }

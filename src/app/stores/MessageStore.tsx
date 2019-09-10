@@ -2,10 +2,14 @@ import {action, observable} from "mobx";
 import {IMessageEntity} from "kokoro-io/dist/src/lib/IPuripara";
 import Pripara, {Events} from "../infrastructures/kokoro.io";
 import BaseStore, {Mode, State} from "./BaseStore";
-import {IMembershipEntity} from "kokoro-io/src/lib/IPuripara";
 import {IActionCableMessage} from "kokoro-io/dist/src/lib/ActionCable";
 
 export default class MessageStore extends BaseStore {
+	@observable
+	public messages: { [index: string]: IMessageEntity[] };
+	@observable
+	public lastId: string;
+
 	constructor() {
 		super();
 
@@ -17,12 +21,6 @@ export default class MessageStore extends BaseStore {
 		}
 		Pripara.on(Events.OnSDKReady, () => this.trackMessage());
 	}
-
-	@observable
-	public messages: {[index: string]: IMessageEntity[]};
-
-	@observable
-	public lastId: string;
 
 	@action
 	public async fetchMessage(id: string) {
@@ -56,26 +54,29 @@ export default class MessageStore extends BaseStore {
 
 	@action
 	private async trackMessage() {
-		Pripara.client.Stream.on("chat" as "Chat", (message: IActionCableMessage) => this.onMessage(message));
-		Pripara.client.Stream.on("event" as "Event", (event: any) => console.log("event:", event));
-		Pripara.client.Stream.on("connect" as "Connect", async () => {
+		Pripara.client.Stream.on(Pripara.client.Stream.Event.Chat, (message: IActionCableMessage<IMessageEntity>) => this.onMessage(message));
+		Pripara.client.Stream.on(Pripara.client.Stream.Event.Event, (event: any) => console.log("event:", event));
+		Pripara.client.Stream.on(Pripara.client.Stream.Event.Connect, async () => {
 			const memberships = await Pripara.client.Api.Memberships.getMemberships();
-			const channels = memberships.map((membership: IMembershipEntity) => {
-				return membership.channel.id;
-			});
-			Pripara.client.Stream.send("message", {
-				action: "subscribe",
-				channels,
-			});
+			const channels = Pripara.client.Helper.membershipsToChannelIds(memberships);
+			Pripara.client.Helper.subscribeChatChannelByChannelIds(Pripara.client.Stream, channels);
 		});
 		Pripara.client.Stream.connect(true);
 	}
 
 	@action
-	private async onMessage(message: IActionCableMessage) {
-		const data = message.data as IMessageEntity;
+	private async onMessage(message: IActionCableMessage<IMessageEntity>) {
+		const {data} = message;
+		if (!data) {
+			return;
+		}
 		if (this.messages[data.channel.id]) {
-			this.messages[data.channel.id].unshift(data);
+			const index = this.messages[data.channel.id].findIndex((message) => message.id === data.id);
+			if (index !== -1) {
+				this.messages[data.channel.id][index] = data;
+			} else {
+				this.messages[data.channel.id].unshift(data);
+			}
 		} else {
 			this.messages[data.channel.id] = [data];
 		}

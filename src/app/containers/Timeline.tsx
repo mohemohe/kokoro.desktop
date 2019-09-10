@@ -1,10 +1,10 @@
 import * as React from "react";
-import { RouteComponentProps } from "react-router";
-import { inject, observer } from "mobx-react";
+import {RouteComponentProps} from "react-router";
+import {inject, observer} from "mobx-react";
 import MessageStore from "../stores/MessageStore";
 import {Message} from "../components/Message";
 
-interface IProps extends RouteComponentProps<{id: string}> {
+interface IProps extends RouteComponentProps<{ id: string }> {
 	MessageStore?: MessageStore;
 }
 

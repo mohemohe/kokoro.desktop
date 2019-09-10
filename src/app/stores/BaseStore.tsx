@@ -1,6 +1,5 @@
-import { action, observable } from "mobx";
+import {action, observable} from "mobx";
 import stores from "./index";
-import Pripara from "../infrastructures/kokoro.io";
 
 export enum State {
 	IDLE,
@@ -31,16 +30,19 @@ export interface IPagitane {
 }
 
 export default class BaseStore {
+	@observable
+	public state: State;
+	@observable
+	public mode: Mode;
+
 	constructor() {
 		this.state = State.IDLE;
 		this.mode = Mode.NONE;
 	}
 
-	@observable
-	public state: State;
-
-	@observable
-	public mode: Mode;
+	protected get authStatus() {
+		return stores.AuthStore.authStatus;
+	}
 
 	@action.bound
 	public setState(state: State) {
@@ -60,9 +62,5 @@ export default class BaseStore {
 	@action.bound
 	public resetMode() {
 		this.mode = Mode.NONE;
-	}
-
-	protected get authStatus() {
-		return stores.AuthStore.authStatus;
 	}
 }

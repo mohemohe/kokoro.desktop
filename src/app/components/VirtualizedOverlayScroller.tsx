@@ -5,7 +5,7 @@ import {AutoSizer, InfiniteLoader, InfiniteLoaderProps, List} from "react-virtua
 
 export interface IProps extends OverlayScrollbarsComponentProps, InfiniteLoaderProps {
 	children: any;
-	items: React.ReactNode[]
+	items: React.ReactNode[];
 }
 
 export interface IState {
@@ -42,7 +42,7 @@ export class VirtualizedOverlayScroller extends React.Component<IProps, IState> 
 						autoHide: "leave",
 						autoHideDelay: 300
 					},
-					callbacks:{
+					callbacks: {
 						onScroll: (event) => {
 							this.setState({
 								scrollTop: (event!.currentTarget! as any).scrollTop,
@@ -51,13 +51,13 @@ export class VirtualizedOverlayScroller extends React.Component<IProps, IState> 
 					},
 				}}>
 					<AutoSizer>
-						{({ height, width }) => (
-                            <InfiniteLoader
-                                isRowLoaded={this.props.isRowLoaded || ((index) => true)}
-                                loadMoreRows={this.props.loadMoreRows || (async ({ startIndex, stopIndex }) => ({}))}
-                                rowCount={this.props.items.length}
-                            >
-								{({ onRowsRendered, registerChild }) => (
+						{({height, width}) => (
+							<InfiniteLoader
+								isRowLoaded={this.props.isRowLoaded || ((index) => true)}
+								loadMoreRows={this.props.loadMoreRows || (async ({startIndex, stopIndex}) => ({}))}
+								rowCount={this.props.items.length}
+							>
+								{({onRowsRendered, registerChild}) => (
 									<List
 										autoHeight={true}
 										height={height}
@@ -65,7 +65,7 @@ export class VirtualizedOverlayScroller extends React.Component<IProps, IState> 
 										ref={registerChild}
 										rowCount={this.props.items.length}
 										rowHeight={24}
-										rowRenderer={({ key, index, style }) =>
+										rowRenderer={({key, index, style}) =>
 											<div key={key} style={style}>
 												{this.props.items[index]}
 											</div>
