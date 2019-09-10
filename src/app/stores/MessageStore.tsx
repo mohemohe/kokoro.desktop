@@ -9,11 +9,14 @@ export default class MessageStore extends BaseStore {
 	public messages: { [index: string]: IMessageEntity[] };
 	@observable
 	public lastId: string;
+	@observable
+	public inputs: { [index: string]: string };
 
 	constructor() {
 		super();
 
 		this.messages = {};
+		this.inputs = {};
 		this.lastId = "";
 
 		if (Pripara.initialized) {
@@ -25,6 +28,7 @@ export default class MessageStore extends BaseStore {
 	@action
 	public async fetchMessage(id: string) {
 		this.lastId = id;
+		this.inputs[id] = this.inputs[id] || "";
 
 		this.setMode(Mode.GET);
 		this.setState(State.RUNNING);
@@ -79,6 +83,23 @@ export default class MessageStore extends BaseStore {
 			}
 		} else {
 			this.messages[data.channel.id] = [data];
+		}
+	}
+
+	@action
+	public async onInputMessage(id: string, message: string) {
+		this.inputs[id] = message;
+	}
+
+	@action
+	public async sendMessage(id: string) {
+		try {
+			await Pripara.client.Api.Channels.postChannelMessage(id, {
+				message: this.inputs[id]
+			});
+			this.inputs[id] = "";
+		} catch (e) {
+			console.error("message send error:", e);
 		}
 	}
 }

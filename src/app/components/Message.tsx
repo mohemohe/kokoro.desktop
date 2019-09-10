@@ -39,8 +39,10 @@ const styles = {
 	}),
 	body: style({
 		$nest: {
-			"& code": {
+			"& pre": {
 				overflowX: "auto",
+			},
+			"& code": {
 				background: "#f6f6f6",
 				border: "1px solid #d9d9d9",
 				padding: "0.1em 0.25em",
