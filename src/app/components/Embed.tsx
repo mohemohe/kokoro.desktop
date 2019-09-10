@@ -11,10 +11,12 @@ const styles = {
 	root: style({
 		display: "flex",
 		borderLeft: "4px solid #dddddd",
+		marginTop: "0.5em",
 		paddingLeft: "0.5em",
 	}),
 	icon: style({
 		maxWidth: 180,
+		paddingRight: "0.5em",
 	}),
 	mediaContainer: style({
 		overflow: "hidden",
