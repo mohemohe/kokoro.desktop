@@ -1,6 +1,6 @@
 import {action, computed, observable} from "mobx";
 import {IProfileEntity} from "kokoro-io/dist/src/lib/IPuripara";
-import Pripara from "../infrastructures/kokoro.io";
+import Pripara, {Aikatsu} from "../infrastructures/kokoro.io";
 import BaseStore, {Mode, State} from "./BaseStore";
 
 export enum AuthStatus {
@@ -42,12 +42,22 @@ export default class AuthStore extends BaseStore {
 	}
 
 	@action
-	public async login(accessToken: string) {
+	public async login(baseUrl: string, username: string, password: string) {
 		this.setMode(Mode.LOGIN);
 		this.setState(State.RUNNING);
 
-		Pripara.initializeClient(accessToken);
-		this.checkAuth();
+		try {
+			const authResult = await Aikatsu.postDevice(baseUrl, username, password, {
+				name: "kokoro.desktop",
+				device_identifier: await global.machineId(),
+				kind: "chrome",
+			});
+			localStorage.token = authResult.access_token;
+			this.restoreLogin();
+		} catch (e) {
+			console.log("login error:", e);
+			this.setState(State.ERROR);
+		}
 	}
 
 	@action

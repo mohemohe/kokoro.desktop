@@ -4,3 +4,9 @@
 html {
     overflow: hidden;
 }
+
+@keyframes loading-spin {
+    0% {transform: rotate(0deg);}
+    90% {transform: rotate(1440deg);}
+    100% {transform: rotate(1440deg);}
+}

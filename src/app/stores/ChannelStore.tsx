@@ -17,7 +17,7 @@ export default class ChannelStore extends BaseStore {
 
 	@action
 	public async fetchChannels() {
-		this.setMode(Mode.LOGIN);
+		this.setMode(Mode.GET);
 		this.setState(State.RUNNING);
 
 		if (Pripara.initialized) {

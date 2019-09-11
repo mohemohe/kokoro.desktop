@@ -7,7 +7,7 @@ import MobxReactRouter, {RouterStore, syncHistoryWithStore} from "mobx-react-rou
 import {SyncedRouter} from "../components/SyncedRouter";
 import {Sidebar} from "./Sidebar";
 import Timeline from "./Timeline";
-import Null from "./Null";
+import Login from "./Login";
 import AuthStore from "../stores/AuthStore";
 
 interface IProps {
@@ -64,7 +64,7 @@ export default class Router extends React.Component<IProps, IState> {
 					<div className={styles.contents}>
 						<SyncedRouter history={this.props.RouterStore!.history}>
 							<Switch>
-								<Route path={"/"} component={Null} exact={true}/>
+								<Route path={"/"} component={Login} exact={true}/>
 								<Route path={"/channels/:id"} component={Timeline} exact={true}/>
 							</Switch>
 						</SyncedRouter>

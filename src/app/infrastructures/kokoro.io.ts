@@ -1,10 +1,15 @@
 import EventEmitter from "eventemitter3";
 import KokoroIo from "kokoro-io/dist/src/lib/kokoro.io";
 
+(window as any).global = window;
 let _client: KokoroIo;
 
 export enum Events {
 	OnSDKReady = "ON_SDK_READY",
+}
+
+export class Aikatsu {
+	public static postDevice = global.kokoro.io.postDevice;
 }
 
 class Pripara extends EventEmitter {
@@ -19,7 +24,6 @@ class Pripara extends EventEmitter {
 	public initializeClient(accessToken: string) {
 		_client = new global.kokoro.io({
 			accessToken,
-			autoReconnect: true,
 		});
 		this.emit(Events.OnSDKReady);
 	}
