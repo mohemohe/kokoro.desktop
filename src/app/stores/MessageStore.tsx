@@ -8,8 +8,6 @@ export default class MessageStore extends BaseStore {
 	@observable
 	public messages: { [index: string]: IMessageEntity[] };
 	@observable
-	public lastId: string;
-	@observable
 	public inputs: { [index: string]: string };
 
 	constructor() {
@@ -17,7 +15,6 @@ export default class MessageStore extends BaseStore {
 
 		this.messages = {};
 		this.inputs = {};
-		this.lastId = "";
 
 		if (Pripara.initialized) {
 			this.trackMessage();
@@ -27,7 +24,6 @@ export default class MessageStore extends BaseStore {
 
 	@action
 	public async fetchMessage(id: string) {
-		this.lastId = id;
 		this.inputs[id] = this.inputs[id] || "";
 
 		this.setMode(Mode.GET);

@@ -52,7 +52,7 @@ export default class AuthStore extends BaseStore {
 				device_identifier: await global.machineId(),
 				kind: "chrome",
 			});
-			localStorage.token = authResult.access_token;
+			localStorage.token = authResult.access_token.token;
 			this.restoreLogin();
 		} catch (e) {
 			console.log("login error:", e);
@@ -90,15 +90,16 @@ export default class AuthStore extends BaseStore {
 
 	@action
 	public async checkAuth() {
-		const me = await Pripara.client.Api.Profiles.getMyProfile();
-
-		// NOTE: 何が返ってくるのか覚えてないけどこんなもんでええじゃろ
-		if (!me || !me.id || me.id === "") {
+		try {
+			const me = await Pripara.client.Api.Profiles.getMyProfile();
+			// NOTE: 何が返ってくるのか覚えてないけどこんなもんでええじゃろ
+			if (!me || !me.id || me.id === "") {
+				throw new Error("invalid account");
+			}
+			this.userInfo = me;
+			this.authStatus = AuthStatus.Authorized;
+		} catch (e) {
 			this.logout();
-			return;
 		}
-
-		this.userInfo = me;
-		this.authStatus = AuthStatus.Authorized;
 	}
 }

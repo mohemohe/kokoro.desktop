@@ -1,4 +1,4 @@
-import {action, observable} from "mobx";
+import {action, observable, computed} from "mobx";
 import {IMembershipEntity} from "kokoro-io/dist/src/lib/IPuripara";
 import Pripara, {Events} from "../infrastructures/kokoro.io";
 import BaseStore, {Mode, State} from "./BaseStore";
@@ -6,11 +6,14 @@ import BaseStore, {Mode, State} from "./BaseStore";
 export default class ChannelStore extends BaseStore {
 	@observable
 	public memberships: IMembershipEntity[];
+	@observable
+	public activeId: string;
 
 	constructor() {
 		super();
 
 		this.memberships = [];
+		this.activeId = "";
 
 		Pripara.on(Events.OnSDKReady, () => this._fetchChannels());
 	}
@@ -35,5 +38,15 @@ export default class ChannelStore extends BaseStore {
 		} else {
 			this.setState(State.ERROR);
 		}
+	}
+
+	@action
+	public setActiveChannel(id: string) {
+		this.activeId = id;
+	}
+
+	@computed
+	public get activeChannel(): IMembershipEntity | undefined {
+		return this.memberships.find((memberships) => memberships.channel.id === this.activeId);
 	}
 }

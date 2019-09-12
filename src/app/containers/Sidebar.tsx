@@ -3,9 +3,9 @@ import {Link} from "react-router-dom";
 import {inject, observer} from "mobx-react";
 import {style} from "typestyle";
 import ChannelStore from "../stores/ChannelStore";
-import {FiHash, FiLock, FiMail} from "react-icons/fi";
 import MessageStore from "../stores/MessageStore";
 import {VirtualizedOverlayScroller} from "../components/VirtualizedOverlayScroller";
+import {ChannelIcon} from "../components/ChannelIcon";
 
 const styles = {
 	root: style({
@@ -89,24 +89,22 @@ export class Sidebar extends React.Component<IProps, IState> {
 			</div>,
 			...this.props.ChannelStore!.memberships.map((membership) => {
 				const classNames = [styles.channel];
-				if (membership.channel.id === this.props.MessageStore!.lastId) {
+				if (membership.channel.id === this.props.ChannelStore!.activeId) {
 					classNames.push(styles.activeChannel);
 				}
 
-				let icon;
-				if (membership.channel.kind.includes("public")) {
-					icon = <FiHash/>;
-				} else if (membership.channel.kind.includes("private")) {
-					icon = <FiLock/>;
-				} else if (membership.channel.kind.includes("direct")) {
-					icon = <FiMail/>;
-				}
-
 				return (
-					<Link to={`/channels/${membership.channel.id}`} className={classNames.join(" ")} key={membership.channel.id}>
+					<Link
+						key={membership.channel.id}
+						className={classNames.join(" ")}
+						to={`/channels/${membership.channel.id}`}
+						onClick={() => {
+							this.props.ChannelStore!.setActiveChannel(membership.channel.id);
+						}}
+						>
 						<div className={styles.channelName}>
 							<div className={styles.icon}>
-								{icon}
+								<ChannelIcon membership={membership}/>
 							</div>
 							{membership.channel.channel_name}
 						</div>

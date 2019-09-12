@@ -31,7 +31,7 @@ const styles = {
 export class Prism extends React.Component<IProps, {}> {
 	public render() {
 		return (
-			<Renderer {...defaultProps} language={this.props.language} theme={oceanicNext} code={this.props.value}>
+			<Renderer {...defaultProps} language={this.props.language || "markup"} theme={oceanicNext} code={this.props.value || ""}>
 				{({ className, style, tokens, getLineProps, getTokenProps }) => (
 					<pre className={[className, styles.pre].join(" ")} style={style}>
                         {tokens.map((line, i) => (
