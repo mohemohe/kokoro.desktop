@@ -99,7 +99,7 @@ export class Sidebar extends React.Component<IProps, IState> {
 			<div className={styles.channelsHeader}>
 				Channels
 			</div>,
-			...this.props.ChannelStore!.memberships.map((membership) => {
+			...this.props.ChannelStore!.memberships.sort((a, b) => a.channel.channel_name.toLowerCase() < b.channel.channel_name.toLowerCase() ? -1 : 1).map((membership) => {
 				const classNames = [styles.channel];
 				if (membership.channel.id === this.props.ChannelStore!.activeId) {
 					classNames.push(styles.activeChannel);
