@@ -4,8 +4,10 @@ import {inject, observer} from "mobx-react";
 import {style} from "typestyle";
 import ChannelStore from "../stores/ChannelStore";
 import MessageStore from "../stores/MessageStore";
-import {VirtualizedOverlayScroller} from "../components/VirtualizedOverlayScroller";
 import {ChannelIcon} from "../components/ChannelIcon";
+import {OverlayScrollbarsComponent} from "overlayscrollbars-react";
+import {AutoSizer} from "react-virtualized";
+import {DynamicSizeList as List} from "react-window-dynamic";
 
 const styles = {
 	root: style({
@@ -55,6 +57,18 @@ const styles = {
 		display: "inline",
 		marginRight: "0.2em",
 	}),
+	scroller: style({
+		flex: 1,
+		display: "flex",
+		$nest: {
+			"& > .os-host": {
+				flex: 1,
+			},
+			"& .list": {
+				height: "auto !important",
+			},
+		},
+	}),
 };
 
 interface IProps extends React.ClassAttributes<{}> {
@@ -71,12 +85,10 @@ interface IState extends React.ComponentState {
 export class Sidebar extends React.Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
-
-		this.state = {
-			scrollTop: 0,
-		};
+		this.listRef = null;
 	}
 
+	private listRef: List | null;
 
 	public componentDidMount() {
 		this.props.ChannelStore!.fetchChannels();
@@ -118,13 +130,43 @@ export class Sidebar extends React.Component<IProps, IState> {
 				<div className={styles.sidebarHeader}>
 					kokoro.desktop
 				</div>
-				<VirtualizedOverlayScroller
-					items={items}
-					className={"os-theme-light"}
-					children={null}
-					isRowLoaded={((index) => true)}
-					loadMoreRows={(async ({startIndex, stopIndex}) => ({}))}
-				/>
+				<div className={styles.scroller}>
+					<OverlayScrollbarsComponent options={{
+						className: "os-theme-light",
+						scrollbars: {
+							autoHide: "leave",
+							autoHideDelay: 300
+						},
+						callbacks: {
+							onScroll: (event) => {
+								if (this.listRef) {
+									const y = (event!.currentTarget! as any).scrollTop;
+									this.listRef.scrollTo(y);
+								}
+							},
+						},
+					}}>
+						<AutoSizer>
+							{({height, width}) => (
+								<List
+									className={"list"}
+									width={width}
+									height={height}
+									itemCount={items.length}
+									ref={(elem) => this.listRef = elem}
+								>
+									{
+										React.forwardRef((props, ref: any) => (
+											<div ref={ref} style={props.style}>
+												{items[props.index]}
+											</div>
+										))
+									}
+								</List>
+							)}
+						</AutoSizer>
+					</OverlayScrollbarsComponent>
+				</div>
 			</div>
 		);
 	}
