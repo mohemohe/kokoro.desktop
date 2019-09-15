@@ -1084,7 +1084,15 @@
     "@types/prop-types" "*"
     "@types/react" "*"
 
-"@types/react-window@^1.8.1":
+"@types/react-window-infinite-loader@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/react-window-infinite-loader/-/react-window-infinite-loader-1.0.1.tgz#2b6e690de63fe24c49938599c1f866857f8df185"
+  integrity sha512-Nj2drKGjymsja7ECsI3H/kYIFwPRJQv2+oXgu1baRtFxXf81/Dus+DhRY/NTRqWQjxUvRqu0vwzIA7iaXAp70g==
+  dependencies:
+    "@types/react" "*"
+    "@types/react-window" "*"
+
+"@types/react-window@*", "@types/react-window@^1.8.1":
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/@types/react-window/-/react-window-1.8.1.tgz#6e1ceab2e6f2f78dbf1f774ee0e00f1bb0364bb3"
   integrity sha512-V3k1O5cbfZIRa0VVbQ81Ekq/7w42CK1SuiB9U1oPMTxv270D9qUn7rHb3sZoqMkIJFfB1NZxaH7NRDlk+ToDsg==
@@ -5356,6 +5364,11 @@ react-window-dynamic@^1.8.0-alpha.1:
   dependencies:
     "@babel/runtime" "^7.0.0"
     memoize-one ">=3.1.1 <6"
+
+react-window-infinite-loader@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/react-window-infinite-loader/-/react-window-infinite-loader-1.0.4.tgz#5cbdf7086d816f9a2a0ad6d5b2cfc9fa26522b9c"
+  integrity sha512-ysEwv41t/aeu6fFkv2U/R+NadKtqUKYjsU+O9O7C58jkk6RuVgkRwdHY37EXmHOkZUv4f8zj2Rae70Uxvu6H+A==
 
 react-window@^1.6.0-alpha.1:
   version "1.6.0-alpha.1"

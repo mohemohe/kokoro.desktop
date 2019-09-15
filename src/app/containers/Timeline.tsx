@@ -1,5 +1,5 @@
 import * as React from "react";
-import {RouteComponentProps, Redirect} from "react-router";
+import {RouteComponentProps} from "react-router";
 import {inject, observer} from "mobx-react";
 import MessageStore from "../stores/MessageStore";
 import {Message} from "../components/Message";
@@ -7,11 +7,14 @@ import TextArea from "react-textarea-autosize";
 import {style} from "typestyle";
 import ChannelStore from "../stores/ChannelStore";
 import {ChannelIcon} from "../components/ChannelIcon";
-import AuthStore, {AuthStatus} from "../stores/AuthStore";
-import {State} from "../stores/BaseStore";
+import AuthStore from "../stores/AuthStore";
+import {Mode, State} from "../stores/BaseStore";
+import OverlayScrollbars from "overlayscrollbars";
 import {OverlayScrollbarsComponent} from "overlayscrollbars-react";
 import {AutoSizer} from "react-virtualized";
 import {DynamicSizeList as List} from "react-window-dynamic";
+import InfiniteLoader from "react-window-infinite-loader";
+import {toJS} from "mobx";
 
 interface IProps extends RouteComponentProps<{ id: string }> {
 	AuthStore?: AuthStore;
@@ -66,21 +69,47 @@ const styles = {
 export default class Timeline extends React.Component<IProps, IState> {
 	constructor(props: IProps, state: IState) {
 		super(props, state);
-		this.listRef = null;
+		this.listRef = React.createRef<List>();
+		this.scrollRef = React.createRef<OverlayScrollbarsComponent>();
+		this.shouldScrollToBottom = false;
 	}
 
-	private listRef: List | null;
+	private listRef: React.RefObject<List>;
+	private scrollRef: React.RefObject<OverlayScrollbarsComponent>;
+	private shouldScrollToBottom: boolean;
 
 	public componentDidMount() {
 		if (this.props.ChannelStore!.activeId !== this.props.match.params.id) {
 			this.props.ChannelStore!.setActiveChannel(this.props.match.params.id);
 		}
 		this.props.MessageStore!.fetchMessage(this.props.match.params.id);
+		this.shouldScrollToBottom = true;
 	}
 
 	public UNSAFE_componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any) {
 		if (this.props.match.params.id != nextProps.match.params.id) {
 			this.props.MessageStore!.fetchMessage(nextProps.match.params.id);
+			this.shouldScrollToBottom = true;
+		}
+	}
+
+	public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>, snapshot?: any): void {
+		console.log("componentDidUpdate");
+		console.log("shouldScrollToBottom:", this.shouldScrollToBottom);
+		if (prevProps.MessageStore!.mode === Mode.GET && prevProps.MessageStore!.state === State.DONE && this.shouldScrollToBottom) {
+			this.shouldScrollToBottom = false;
+			if (this.listRef.current && this.scrollRef.current) {
+				const instance = this.scrollRef.current.osInstance();
+				if (instance) {
+					const id = this.props.match.params.id;
+					const messages = this.props.MessageStore!.messages[id] || [];
+					console.log(messages.length - 1);
+					this.listRef.current.scrollToItem(messages.length - 1);
+					instance.scroll({
+						y: "100%",
+					});
+				}
+			}
 		}
 	}
 
@@ -115,7 +144,7 @@ export default class Timeline extends React.Component<IProps, IState> {
 			<div className={styles.root}>
 				{this.header()}
 				<div className={styles.messages}>
-					<OverlayScrollbarsComponent options={{
+					<OverlayScrollbarsComponent ref={this.scrollRef} options={{
 						className: "os-theme-dark",
 						scrollbars: {
 							autoHide: "leave",
@@ -123,30 +152,49 @@ export default class Timeline extends React.Component<IProps, IState> {
 						},
 						callbacks: {
 							onScroll: (event) => {
-								if (this.listRef) {
+								if (this.listRef.current) {
 									const y = (event!.currentTarget! as any).scrollTop;
-									this.listRef.scrollTo(y);
+									requestAnimationFrame(() => {
+										this.listRef.current!.scrollTo(y);
+									});
 								}
 							},
 						},
 					}}>
 						<AutoSizer>
 							{({height, width}) => (
-								<List
-									className={"list"}
-									width={width}
-									height={height}
-									itemCount={items.length}
-									ref={(elem) => this.listRef = elem}
+								<InfiniteLoader
+									isItemLoaded={(index) => 0 < index && index < items.length + 1}
+									itemCount={items.length + 2}
+									loadMoreItems={async (startIndex, stopIndex) => {
+										if (startIndex === 0 && messages.length !== 0) {
+											const firstMessage = toJS(messages)[messages.length - 1];
+											this.props.MessageStore!.fetchMoreMessage(id, firstMessage.id);
+										}
+									}}
+									threshold={5}
+									minimumBatchSize={30}
 								>
-									{
-										React.forwardRef((props, ref: any) => (
-											<div ref={ref} style={props.style}>
-												{items[props.index]}
-											</div>
-										))
-									}
-								</List>
+									{({ onItemsRendered, ref }) => (
+										<List
+											key={id}
+											className={"list"}
+											width={width}
+											height={height}
+											itemCount={items.length}
+											onItemsRendered={onItemsRendered}
+											ref={this.listRef}
+										>
+											{
+												React.forwardRef((props, ref: any) => (
+													<div ref={ref} style={props.style}>
+														{items[props.index]}
+													</div>
+												))
+											}
+										</List>
+									)}
+								</InfiniteLoader>
 							)}
 						</AutoSizer>
 					</OverlayScrollbarsComponent>
@@ -164,6 +212,7 @@ export default class Timeline extends React.Component<IProps, IState> {
 						if (event.keyCode == 13) {
 							if (!event.shiftKey) {
 								event.preventDefault();
+								// this.shouldScrollToBottom = true;
 								this.props.MessageStore!.sendMessage(id);
 							}
 						}

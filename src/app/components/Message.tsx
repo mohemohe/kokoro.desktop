@@ -39,6 +39,9 @@ const styles = {
 	}),
 	body: style({
 		$nest: {
+			"& img": {
+				maxWidth: "100%",
+			},
 			"& pre": {
 				overflowX: "auto",
 			},

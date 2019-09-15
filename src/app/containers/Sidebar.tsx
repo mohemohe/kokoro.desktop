@@ -85,10 +85,10 @@ interface IState extends React.ComponentState {
 export class Sidebar extends React.Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
-		this.listRef = null;
+		this.listRef = React.createRef<List>();
 	}
 
-	private listRef: List | null;
+	private listRef: React.RefObject<List>;
 
 	public componentDidMount() {
 		this.props.ChannelStore!.fetchChannels();
@@ -139,9 +139,9 @@ export class Sidebar extends React.Component<IProps, IState> {
 						},
 						callbacks: {
 							onScroll: (event) => {
-								if (this.listRef) {
+								if (this.listRef.current) {
 									const y = (event!.currentTarget! as any).scrollTop;
-									this.listRef.scrollTo(y);
+									this.listRef.current.scrollTo(y);
 								}
 							},
 						},
@@ -153,7 +153,7 @@ export class Sidebar extends React.Component<IProps, IState> {
 									width={width}
 									height={height}
 									itemCount={items.length}
-									ref={(elem) => this.listRef = elem}
+									ref={this.listRef}
 								>
 									{
 										React.forwardRef((props, ref: any) => (

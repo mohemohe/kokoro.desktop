@@ -1,12 +1,13 @@
 import {action, observable} from "mobx";
 import {IMessageEntity} from "kokoro-io/dist/src/lib/IPuripara";
+import {IActionCableMessage} from "kokoro-io/dist/src/lib/ActionCable";
 import Pripara, {Events} from "../infrastructures/kokoro.io";
 import BaseStore, {Mode, State} from "./BaseStore";
-import {IActionCableMessage} from "kokoro-io/dist/src/lib/ActionCable";
 
 export default class MessageStore extends BaseStore {
 	@observable
 	public messages: { [index: string]: IMessageEntity[] };
+	public fetched: { [index: string]: number[] };
 	@observable
 	public inputs: { [index: string]: string };
 
@@ -41,15 +42,35 @@ export default class MessageStore extends BaseStore {
 	}
 
 	@action
-	private async _fetchMessage(id: string) {
-		const messages = await Pripara.client.Api.Channels.getChannelMessages(id, 20);
+	public async fetchMoreMessage(id: string, beforeId: number) {
+		this.setMode(Mode.GET);
+		this.setState(State.RUNNING);
+
+		if (Pripara.initialized) {
+			this._fetchMessage(id, beforeId);
+		} else {
+			const deferFetch = (id: string, beforeId: number) => {
+				this._fetchMessage(id, beforeId);
+				Pripara.off(Events.OnSDKReady, deferFetch);
+			};
+			Pripara.on(Events.OnSDKReady, () => deferFetch(id, beforeId));
+		}
+	}
+
+	@action
+	private async _fetchMessage(id: string, beforeId?: number) {
+		const messages = await Pripara.client.Api.Channels.getChannelMessages(id, 30, beforeId);
 		if (!messages) {
 			this.setState(State.ERROR);
 			return;
 		}
-		console.log("channel:", id, "messages:", messages);
-		this.messages[id] = messages;
+		console.log("channel:", id, "beforeId:", beforeId, "messages:", messages);
 		this.setState(State.DONE);
+		if (beforeId) {
+			this.messages[id].push(...messages);
+		} else {
+			this.messages[id] = messages;
+		}
 	}
 
 	@action
