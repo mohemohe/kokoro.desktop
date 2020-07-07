@@ -24,7 +24,7 @@
     "@types/react-virtualized": "^9.21.4",
     "@types/react-window": "^1.8.1",
     "core-js": "^3.2.1",
-    "electron": "^6.0.7",
+    "electron": "^7.2.4",
     "eventemitter3": "^4.0.0",
     "history": "^4.9.0",
     "kokoro-io": "https://github.com/mohemohe/kokoro.io.js.git#develop",
