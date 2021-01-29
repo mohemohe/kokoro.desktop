@@ -6675,6 +6675,11 @@ url@^0.11.0:
     punycode "1.3.2"
     querystring "0.2.0"
 
+use-chat-scroll@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/use-chat-scroll/-/use-chat-scroll-1.0.3.tgz#691420f50f06d24254c99ed4cf1b1b6fde25c825"
+  integrity sha512-NMU1dyr1MIhCIy0vBxg5Ey5IdZ3jO/VeV0hp9IJt+sgfKEhGHVg5VyfDBiXsCtKDzfa0HuyPokjkwpyMs66p6g==
+
 use@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"

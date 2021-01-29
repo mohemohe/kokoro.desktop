@@ -13,7 +13,7 @@ export default class ChannelStore extends BaseStore {
 		super();
 
 		this.memberships = [];
-		this.activeId = "";
+		this.activeId = localStorage.activeChannelId || "";
 
 		Pripara.on(Events.OnSDKReady, () => this._fetchChannels());
 	}
@@ -32,7 +32,7 @@ export default class ChannelStore extends BaseStore {
 	private async _fetchChannels() {
 		const memberships = await Pripara.client.Api.Memberships.getMemberships();
 		if (memberships) {
-			this.memberships = memberships;
+			this.memberships = memberships.sort((a, b) => a.channel.channel_name.toLowerCase() < b.channel.channel_name.toLowerCase() ? -1 : 1);
 			console.log("memberships:", memberships);
 			this.setState(State.DONE);
 		} else {
@@ -41,12 +41,25 @@ export default class ChannelStore extends BaseStore {
 	}
 
 	@action
-	public setActiveChannel(id: string) {
+	public setActiveChannel(id: string, retry: number = 0) {
 		this.activeId = id;
+		localStorage.activeChannelId = id;
+
+		// FIXME:
+		window.requestAnimationFrame(() => {
+			const target = document.getElementById(`sidebar-channel-${id}`);
+			console.log("setActiveChannel", id, target);
+			if (target) {
+				(target as any).scrollIntoViewIfNeeded(true);
+			} else if (retry < 600) {
+				this.setActiveChannel(id, ++retry);
+			}
+		});
 	}
 
 	@computed
 	public get activeChannel(): IMembershipEntity | undefined {
+		console.log("activeChannel changed:", this.activeId);
 		return this.memberships.find((memberships) => memberships.channel.id === this.activeId);
 	}
 }

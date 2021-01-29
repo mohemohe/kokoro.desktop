@@ -52,7 +52,7 @@
     "remove": "^0.1.5",
     "ress": "^1.2.2",
     "styled-components": "^4.3.2",
-    "typestyle": "^2.0.4"
+    "typestyle": "^2.0.4",
     "use-chat-scroll": "^1.0.3"
   },
   "scripts": {

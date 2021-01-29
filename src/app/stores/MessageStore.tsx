@@ -7,7 +7,7 @@ import BaseStore, {Mode, State} from "./BaseStore";
 export default class MessageStore extends BaseStore {
 	@observable
 	public messages: { [index: string]: IMessageEntity[] };
-	public fetched: { [index: string]: number[] };
+
 	@observable
 	public inputs: { [index: string]: string };
 
@@ -31,7 +31,7 @@ export default class MessageStore extends BaseStore {
 		this.setState(State.RUNNING);
 
 		if (Pripara.initialized) {
-			this._fetchMessage(id);
+			await this._fetchMessage(id);
 		} else {
 			const deferFetch = (id: string) => {
 				this._fetchMessage(id);
@@ -47,7 +47,7 @@ export default class MessageStore extends BaseStore {
 		this.setState(State.RUNNING);
 
 		if (Pripara.initialized) {
-			this._fetchMessage(id, beforeId);
+			await this._fetchMessage(id, beforeId);
 		} else {
 			const deferFetch = (id: string, beforeId: number) => {
 				this._fetchMessage(id, beforeId);
@@ -59,18 +59,22 @@ export default class MessageStore extends BaseStore {
 
 	@action
 	private async _fetchMessage(id: string, beforeId?: number) {
-		const messages = await Pripara.client.Api.Channels.getChannelMessages(id, 30, beforeId);
+		let messages = await Pripara.client.Api.Channels.getChannelMessages(id, 30, beforeId);
 		if (!messages) {
 			this.setState(State.ERROR);
 			return;
 		}
+		console.log("messages:", messages);
+		messages = messages.reverse();
+		console.log("messages:", messages);
 		console.log("channel:", id, "beforeId:", beforeId, "messages:", messages);
-		this.setState(State.DONE);
 		if (beforeId) {
-			this.messages[id].push(...messages);
+			this.messages[id] = [...messages, ...this.messages[id]];
 		} else {
 			this.messages[id] = messages;
 		}
+		this.messages = {...this.messages};
+		this.setState(State.DONE);
 	}
 
 	@action
@@ -91,16 +95,20 @@ export default class MessageStore extends BaseStore {
 		if (!data) {
 			return;
 		}
+		console.log("MessageStore", "onMessage:", message);
+
 		if (this.messages[data.channel.id]) {
 			const index = this.messages[data.channel.id].findIndex((message) => message.id === data.id);
 			if (index !== -1) {
 				this.messages[data.channel.id][index] = data;
 			} else {
-				this.messages[data.channel.id].unshift(data);
+				this.messages[data.channel.id].push(data);
 			}
 		} else {
 			this.messages[data.channel.id] = [data];
 		}
+		console.log("MessageStore", "nextMessages:", this.messages);
+		this.messages = {...this.messages};
 	}
 
 	@action

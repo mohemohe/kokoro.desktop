@@ -10,6 +10,7 @@ export enum AuthStatus {
 
 export default class AuthStore extends BaseStore {
 	@observable
+	// @ts-ignore
 	public authStatus: AuthStatus;
 
 	@observable
