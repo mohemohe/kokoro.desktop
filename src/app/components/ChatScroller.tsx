@@ -27,14 +27,18 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 		this.scrollRef = React.createRef<OverlayScrollbarsComponent>();
 		this.scrollLoop = true;
 		this.shouldBottom = true;
+		this.shouldKeep = false;
 		this.waitMouse = true;
+		this.lastBottomOffset = -1;
 	}
 
 	private listRef: React.RefObject<HTMLDivElement>;
 	private scrollRef: React.RefObject<OverlayScrollbarsComponent>;
 	private scrollLoop: boolean;
 	private shouldBottom: boolean;
+	private shouldKeep: boolean;
 	private waitMouse: boolean;
+	private lastBottomOffset: number;
 
 	public componentDidMount() {
 		console.log("ChatScroller", "componentDidMount");
@@ -59,20 +63,34 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 	}
 
 	private scrollToBottom() {
-		window.requestAnimationFrame(() => {
-			if (!this.scrollRef.current) {
-				return;
-			}
-			const instance = this.scrollRef.current.osInstance();
-			if (!instance) {
-				return;
-			}
+		if (!this.scrollRef.current) {
+			return;
+		}
+		const instance = this.scrollRef.current.osInstance();
+		if (!instance) {
+			return;
+		}
 
-			this.waitMouse = false;
-			instance.scroll({
-				x: 0,
-				y: instance.scroll().max.y,
-			});
+		this.waitMouse = false;
+		instance.scroll({
+			x: 0,
+			y: instance.scroll().max.y,
+		});
+	}
+
+	private scrollToKeep() {
+		if (!this.scrollRef.current) {
+			return;
+		}
+		const instance = this.scrollRef.current.osInstance();
+		if (!instance) {
+			return;
+		}
+
+		this.waitMouse = false;
+		instance.scroll({
+			x: 0,
+			y: instance.scroll().max.y - this.lastBottomOffset,
 		});
 	}
 
@@ -92,26 +110,45 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 						if (this.shouldBottom) {
 							this.scrollToBottom();
 						}
+						if (this.shouldKeep) {
+							this.scrollToKeep();
+						}
 					},
 					onScroll: (event) => {
-						console.log("onScroll", "waitMouse:", this.waitMouse);
-						if (event && event.currentTarget && this.listRef.current) {
+						if (event && event.currentTarget && this.listRef.current && this.scrollRef.current) {
+							const instance = this.scrollRef.current.osInstance();
+							if (!instance) {
+								return;
+							}
+
 							const target = event.currentTarget as HTMLDivElement;
 							const offset = target.scrollTop;
 							const maxOffset = target.scrollHeight - target.clientHeight;
 
-							// NOTE: 自動スクロール終了
+							if (offset === 0 && this.lastBottomOffset === -1) {
+								const messages = this.props.MessageStore!.messages[this.props.channelId] || [];
+								const topMessage = messages.slice().shift();
+								if (topMessage) {
+									this.waitMouse = false;
+									this.shouldKeep = true;
+									this.lastBottomOffset = instance.scroll().max.y;
+									this.props.MessageStore!.fetchMoreMessage(this.props.channelId, topMessage.id);
+								}
+							}
+
+							// NOTE: 自動スクロール終了判定
 							if (!this.waitMouse) {
-								this.waitMouse = offset === maxOffset;
+								this.waitMouse = offset >= maxOffset - 8 || Math.abs(instance.scroll().max.y - this.lastBottomOffset) >= 8;
 							}
 
 							// NOTE: ユーザーがスクロールしたら自動スクロールするかしないか決める
 							if (this.waitMouse) {
-								this.shouldBottom = offset === maxOffset;
+								this.shouldBottom = offset >= maxOffset - 8;
+								this.shouldKeep = false;
+								this.lastBottomOffset = -1;
 							}
 
-							console.log("onScroll", "offset:", offset, "/", maxOffset);
-							console.log("onScroll", "shouldBottom:", this.shouldBottom);
+							console.log("onScroll", {offset, maxOffset, waitMouse: this.waitMouse, lastBottomOffset: this.lastBottomOffset, shouldBottom: this.shouldBottom, shouldKeep: this.shouldKeep});
 						}
 					},
 				},

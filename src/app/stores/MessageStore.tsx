@@ -1,8 +1,9 @@
 import {action, observable} from "mobx";
 import {IMessageEntity} from "kokoro-io/dist/src/lib/IPuripara";
-import {IActionCableMessage} from "kokoro-io/dist/src/lib/ActionCable";
+import {EventType, IActionCableMessage} from "kokoro-io/dist/src/lib/ActionCable";
 import Pripara, {Events} from "../infrastructures/kokoro.io";
 import BaseStore, {Mode, State} from "./BaseStore";
+import stores from "./index";
 
 export default class MessageStore extends BaseStore {
 	@observable
@@ -11,16 +12,31 @@ export default class MessageStore extends BaseStore {
 	@observable
 	public inputs: { [index: string]: string };
 
+	private shouldReload: boolean;
+
 	constructor() {
 		super();
 
 		this.messages = {};
 		this.inputs = {};
+		this.shouldReload = false;
 
 		if (Pripara.initialized) {
 			this.trackMessage();
 		}
-		Pripara.on(Events.OnSDKReady, () => this.trackMessage());
+		Pripara.on(Events.OnSDKReady, () => {
+			this.trackMessage();
+			Pripara.client.Stream.on(EventType.Disconnect, () => this.shouldReload = true);
+			Pripara.client.Stream.on(EventType.Connect, () => {
+				if (this.shouldReload) {
+					this.shouldReload = false;
+
+					const id = stores.ChannelStore.activeId;
+					const messages = this.messages[id] || [];
+					this.reFetchMessage(id, messages.length);
+				}
+			});
+		});
 	}
 
 	@action
@@ -78,6 +94,22 @@ export default class MessageStore extends BaseStore {
 	}
 
 	@action
+	private async reFetchMessage(id: string, limit: number) {
+		let messages = await Pripara.client.Api.Channels.getChannelMessages(id, limit);
+		if (!messages) {
+			this.setState(State.ERROR);
+			return;
+		}
+		console.log("messages:", messages);
+		messages = messages.reverse();
+		console.log("messages:", messages);
+		console.log("channel:", id, "messages:", messages);
+		this.messages[id] = messages;
+		this.messages = {...this.messages};
+		this.setState(State.DONE);
+	}
+
+	@action
 	private async trackMessage() {
 		Pripara.client.Stream.on(Pripara.client.Stream.Event.Chat, (message: IActionCableMessage<IMessageEntity>) => this.onMessage(message));
 		Pripara.client.Stream.on(Pripara.client.Stream.Event.Event, (event: any) => console.log("event:", event));
@@ -105,7 +137,8 @@ export default class MessageStore extends BaseStore {
 				this.messages[data.channel.id].push(data);
 			}
 		} else {
-			this.messages[data.channel.id] = [data];
+			// NOTE: 初回ロードに任せる
+			// this.messages[data.channel.id] = [data];
 		}
 		console.log("MessageStore", "nextMessages:", this.messages);
 		this.messages = {...this.messages};
