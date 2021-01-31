@@ -7,6 +7,7 @@ import { Prism } from "./Prism";
 
 export interface IProps {
 	message: IMessageEntity;
+	previous: IMessageEntity | null;
 }
 
 const styles = {
@@ -22,6 +23,15 @@ const styles = {
 			},
 			"& a": {
 				color: "#1f6da8",
+			},
+		},
+	}),
+	leftContainer: style({
+		width: 40,
+		height: "auto",
+		$nest: {
+			"& img": {
+				borderRadius: 4,
 			},
 		},
 	}),
@@ -56,6 +66,16 @@ const styles = {
 };
 
 export class Message extends React.Component<IProps, {}> {
+	private get shouldHideInfo() {
+		return (
+			this.props.previous &&
+			this.props.previous.profile.id === this.props.message.profile.id &&
+			this.props.previous.display_name === this.props.message.display_name &&
+			this.props.previous.avatar === this.props.message.avatar &&
+			new Date(this.props.message.published_at).getTime() - new Date(this.props.previous.published_at).getTime() < 180000 // NOTE: 180sec
+		);
+	}
+
 	public render() {
 		const {message} = this.props;
 		if (!message) {
@@ -63,13 +83,15 @@ export class Message extends React.Component<IProps, {}> {
 		}
 		return (
 			<div className={styles.root}>
-				<div>
-					<img src={message.avatar} alt={message.display_name}/>
+				<div className={styles.leftContainer}>
+					{!this.shouldHideInfo && <img src={message.avatar} alt={message.display_name}/>}
 				</div>
 				<div className={styles.rightContainer}>
-					<div>
-						<span className={styles.name}>{message.display_name}</span> <span className={styles.date}>{new Date(message.published_at).toLocaleString()}</span>
-					</div>
+					{!this.shouldHideInfo && (
+						<div>
+							<span className={styles.name}>{message.display_name}</span> <span className={styles.date}>{new Date(message.published_at).toLocaleString()}</span>
+						</div>
+					)}
 					<ReactMarkdown
 						className={styles.body}
 						source={message.raw_content}

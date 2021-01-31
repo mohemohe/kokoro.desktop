@@ -143,7 +143,7 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 
 							// NOTE: ユーザーがスクロールしたら自動スクロールするかしないか決める
 							if (this.waitMouse) {
-								this.shouldBottom = offset >= maxOffset - 8;
+								this.shouldBottom = offset >= maxOffset - 20;
 								this.shouldKeep = false;
 								this.lastBottomOffset = -1;
 							}
@@ -154,7 +154,12 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 				},
 			}}>
 				<div className={styles.list} ref={this.listRef}>
-					{messages.slice().map((message) => <Message key={message.id} message={message} />)}
+					{messages.slice().map((message, index) => {
+						if (index === 0) {
+							return <Message key={message.id} message={message} previous={null} />
+						}
+						return <Message key={message.id} message={message} previous={messages[index-1]} />
+					})}
 				</div>
 			</OverlayScrollbarsComponent>
 		)
