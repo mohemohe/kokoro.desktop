@@ -4,6 +4,7 @@ import {IMessageEntity} from "kokoro-io/dist/src/lib/IPuripara";
 import {style} from "typestyle";
 import {Embed} from "./Embed";
 import { Prism } from "./Prism";
+import electron from "electron";
 
 export interface IProps {
 	message: IMessageEntity;
@@ -97,7 +98,20 @@ export class Message extends React.Component<IProps, {}> {
 						source={message.raw_content}
 						escapeHtml={true}
 						renderers={{
-							link: props => <a href={props.href} target="_blank">{props.children}</a>,
+							link: (props) => (
+								<a
+									href={props.href}
+									onClick={(event) => {
+										event.preventDefault();
+										event.stopPropagation();
+
+										// TODO: 別channelとかのアプリ内リンクを考慮する必要がある
+										electron.shell.openExternal(props.href);
+									}}
+								>
+									{props.children}
+								</a>
+							),
 							code: Prism,
 						}}
 					/>
