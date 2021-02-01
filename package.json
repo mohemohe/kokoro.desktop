@@ -10,6 +10,7 @@
     "typescript": "^3.6.2"
   },
   "dependencies": {
+    "@atlaskit/badge": "^14.1.0",
     "@atlaskit/button": "^13.2.0",
     "@atlaskit/form": "^6.2.0",
     "@atlaskit/textfield": "^3.0.7",

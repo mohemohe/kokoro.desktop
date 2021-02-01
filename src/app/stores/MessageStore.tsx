@@ -4,10 +4,14 @@ import {EventType, IActionCableMessage} from "kokoro-io/dist/src/lib/ActionCable
 import Pripara, {Events} from "../infrastructures/kokoro.io";
 import BaseStore, {Mode, State} from "./BaseStore";
 import stores from "./index";
+import {remote} from "electron";
 
 export default class MessageStore extends BaseStore {
 	@observable
 	public messages: { [index: string]: IMessageEntity[] };
+
+	@observable
+	public unReads: { [index: string]: number };
 
 	@observable
 	public inputs: { [index: string]: string };
@@ -18,6 +22,7 @@ export default class MessageStore extends BaseStore {
 		super();
 
 		this.messages = {};
+		this.unReads = {};
 		this.inputs = {};
 		this.shouldReload = false;
 
@@ -140,8 +145,38 @@ export default class MessageStore extends BaseStore {
 			// NOTE: 初回ロードに任せる
 			// this.messages[data.channel.id] = [data];
 		}
+
+		if (data.channel.id !== stores.ChannelStore!.activeId) {
+			this.unReads[data.channel.id] = this.unReads[data.channel.id] || 0;
+			this.unReads[data.channel.id]++;
+			this.unReads = {...this.unReads};
+		}
+		if (data.channel.id !== stores.ChannelStore!.activeId || !this.isActive) {
+			this.createNotification(message);
+		}
+
 		console.log("MessageStore", "nextMessages:", this.messages);
 		this.messages = {...this.messages};
+	}
+
+	private createNotification(message: IActionCableMessage<IMessageEntity>) {
+		const {data} = message;
+		if (!data) {
+			return;
+		}
+		new Notification(`#${data.channel.channel_name}`, {
+			body: data.plaintext_content,
+			icon: data.avatar,
+		});
+	}
+
+	private get isActive() {
+		const windows = remote.BrowserWindow.getAllWindows();
+		if (windows.length === 0) {
+			return false;
+		}
+		const [mainWindow] = windows;
+		return mainWindow.isFocused();
 	}
 
 	@action
@@ -159,5 +194,16 @@ export default class MessageStore extends BaseStore {
 		} catch (e) {
 			console.error("message send error:", e);
 		}
+	}
+
+	@action
+	public decreaseUnReads(id: string, count = -1) {
+		this.unReads[id] = this.unReads[id] || 0;
+		if (count < 0) {
+			delete this.unReads[id];
+		} else {
+			this.unReads[id] -= count;
+		}
+		this.unReads = {...this.unReads};
 	}
 }

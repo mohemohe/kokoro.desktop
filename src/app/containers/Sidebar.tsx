@@ -1,11 +1,12 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import {inject, observer} from "mobx-react";
-import {style} from "typestyle";
+import {classes, style} from "typestyle";
 import ChannelStore from "../stores/ChannelStore";
 import MessageStore from "../stores/MessageStore";
 import {ChannelIcon} from "../components/ChannelIcon";
 import {OverlayScrollbarsComponent} from "overlayscrollbars-react";
+import Badge from "@atlaskit/badge";
 import {AutoSizer} from "react-virtualized";
 import {DynamicSizeList as List} from "react-window-dynamic";
 
@@ -34,6 +35,7 @@ const styles = {
 	}),
 	channel: style({
 		display: "flex",
+		justifyContent: "space-between",
 		padding: "3px 0.5em 3px 1em",
 		textDecoration: "none",
 		color: "#898989",
@@ -105,18 +107,26 @@ export class Sidebar extends React.Component<IProps, IState> {
 					<Link
 						id={`sidebar-channel-${membership.channel.id}`}
 						key={membership.channel.id}
-						className={classNames.join(" ")}
+						className={classes(...classNames)}
 						to={`/channels/${membership.channel.id}`}
 						onClick={() => {
 							this.props.ChannelStore!.setActiveChannel(membership.channel.id);
 						}}
-						>
+					>
 						<div className={styles.channelName}>
 							<div className={styles.icon}>
 								<ChannelIcon membership={membership}/>
 							</div>
-							{membership.channel.channel_name}
+							<span>
+								{membership.channel.channel_name}
+							</span>
+
 						</div>
+						{
+							this.props.MessageStore!.unReads[membership.channel.id] &&
+							this.props.MessageStore!.unReads[membership.channel.id] > 0 &&
+							<Badge appearance="important" max={99}>{this.props.MessageStore!.unReads[membership.channel.id]}</Badge>
+						}
 					</Link>
 				)
 			})

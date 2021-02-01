@@ -11,6 +11,14 @@
     prop-types "^15.5.10"
     tslib "^1.9.3"
 
+"@atlaskit/badge@^14.1.0":
+  version "14.1.0"
+  resolved "https://registry.yarnpkg.com/@atlaskit/badge/-/badge-14.1.0.tgz#ea35ec3657df8ee0cdc959001d332b2634a697d7"
+  integrity sha512-wNpQlJG6g5cQ8mLOM+WXvXWaNzFqe4JhFnOI+7lyHY7x90aqhNdZihd3wVxVWfaJ5lQ9lniXrxkhtNKXKWpqIQ==
+  dependencies:
+    "@atlaskit/theme" "^11.0.0"
+    "@babel/runtime" "^7.0.0"
+
 "@atlaskit/button@^13.2.0":
   version "13.2.0"
   resolved "https://registry.yarnpkg.com/@atlaskit/button/-/button-13.2.0.tgz#0b9d6939518294f9e50213991de6fd7c0f4b4a39"
@@ -68,6 +76,15 @@
     "@atlaskit/theme" "^9.2.2"
     "@emotion/core" "^10.0.9"
     tslib "^1.9.3"
+
+"@atlaskit/theme@^11.0.0":
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/@atlaskit/theme/-/theme-11.0.2.tgz#e657763905853e23ad385ae84e5bd49c2571863e"
+  integrity sha512-1lUyifZGPBFfsTBmlsL9gRVWDS1h+75qqpWJHuMN3x9TwWs9KB5lA8yLhX5/FavNcyLIDa/GIRM4DfAilhvi5w==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    exenv "^1.2.2"
+    prop-types "^15.5.10"
 
 "@atlaskit/theme@^9.1.6", "@atlaskit/theme@^9.2.2":
   version "9.2.2"

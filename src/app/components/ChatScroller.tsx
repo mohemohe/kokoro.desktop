@@ -25,6 +25,7 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 
 		this.listRef = React.createRef<HTMLDivElement>();
 		this.scrollRef = React.createRef<OverlayScrollbarsComponent>();
+		this.initialized = true;
 		this.scrollLoop = true;
 		this.shouldBottom = true;
 		this.shouldKeep = false;
@@ -34,6 +35,7 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 
 	private listRef: React.RefObject<HTMLDivElement>;
 	private scrollRef: React.RefObject<OverlayScrollbarsComponent>;
+	private initialized: boolean;
 	private scrollLoop: boolean;
 	private shouldBottom: boolean;
 	private shouldKeep: boolean;
@@ -42,6 +44,9 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 
 	public componentDidMount() {
 		console.log("ChatScroller", "componentDidMount");
+
+		// FIXME: 既読位置の考慮が必要
+		this.props.MessageStore!.decreaseUnReads(this.props.channelId);
 	}
 
 	public UNSAFE_componentWillUpdate(nextProps: Readonly<IProps>, nextState: Readonly<{}>, nextContext: any) {
@@ -143,7 +148,7 @@ export default class ChatScroller extends React.Component<IProps, {}> {
 
 							// NOTE: ユーザーがスクロールしたら自動スクロールするかしないか決める
 							if (this.waitMouse) {
-								this.shouldBottom = offset >= maxOffset - 20;
+								this.shouldBottom = (maxOffset - offset) < instance.getElements().viewport.clientHeight / 3;
 								this.shouldKeep = false;
 								this.lastBottomOffset = -1;
 							}
