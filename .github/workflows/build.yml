@@ -15,8 +15,8 @@ jobs:
           node-version: 14.x
       - run: yarn
       - run: yarn build
-      - run: electron-builder --linux pacman
-      - run: electron-builder --linux AppImage
+      - run: npx electron-builder --linux pacman
+      - run: npx electron-builder --linux AppImage
       - uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,7 +36,7 @@ jobs:
           node-version: 14.x
       - run: yarn
       - run: yarn build
-      - run: electron-builder --mac dmg
+      - run: npx electron-builder --mac dmg
       - uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,8 +55,8 @@ jobs:
           node-version: 14.x
       - run: yarn
       - run: yarn build
-      - run: electron-builder --win zip --x64
-      - run: electron-builder --win nsis --x64
+      - run: npx electron-builder --win zip --x64
+      - run: npx electron-builder --win nsis --x64
       - uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
