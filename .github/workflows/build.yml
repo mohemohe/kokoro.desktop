@@ -13,10 +13,14 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 14.x
+      - run: apt update
+      - run: apt install -y libarchive-tools
+        env:
+          DEBIAN_FRONTEND: noninteractive
       - run: yarn
       - run: yarn build
-      - run: npx electron-builder --linux pacman
-      - run: npx electron-builder --linux AppImage
+      - run: npx electron-builder --publish never --linux pacman
+      - run: npx electron-builder --publish never --linux AppImage
       - uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,7 +40,7 @@ jobs:
           node-version: 14.x
       - run: yarn
       - run: yarn build
-      - run: npx electron-builder --mac dmg
+      - run: npx electron-builder --publish never --mac dmg
       - uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,8 +59,8 @@ jobs:
           node-version: 14.x
       - run: yarn
       - run: yarn build
-      - run: npx electron-builder --win zip --x64
-      - run: npx electron-builder --win nsis --x64
+      - run: npx electron-builder --publish never --x64 --win zip
+      - run: npx electron-builder --publish never --x64 --win nsis
       - uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
