@@ -13,8 +13,8 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 14.x
-      - run: apt update
-      - run: apt install -y libarchive-tools
+      - run: sudo apt update
+      - run: sudo apt install -y libarchive-tools
         env:
           DEBIAN_FRONTEND: noninteractive
       - run: yarn
