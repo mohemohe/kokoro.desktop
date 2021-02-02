@@ -1,11 +1,12 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import {inject, observer} from "mobx-react";
-import {style} from "typestyle";
+import {classes, style} from "typestyle";
 import ChannelStore from "../stores/ChannelStore";
 import MessageStore from "../stores/MessageStore";
 import {ChannelIcon} from "../components/ChannelIcon";
 import {OverlayScrollbarsComponent} from "overlayscrollbars-react";
+import Badge from "@atlaskit/badge";
 import {AutoSizer} from "react-virtualized";
 import {DynamicSizeList as List} from "react-window-dynamic";
 
@@ -34,6 +35,7 @@ const styles = {
 	}),
 	channel: style({
 		display: "flex",
+		justifyContent: "space-between",
 		padding: "3px 0.5em 3px 1em",
 		textDecoration: "none",
 		color: "#898989",
@@ -85,21 +87,17 @@ interface IState extends React.ComponentState {
 export class Sidebar extends React.Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
-		this.listRef = null;
+		// this.listRef = React.createRef<List>();
 	}
 
-	private listRef: List | null;
-
-	public componentDidMount() {
-		this.props.ChannelStore!.fetchChannels();
-	}
+	// private listRef: React.RefObject<List>;
 
 	public render() {
 		const items = [
 			<div className={styles.channelsHeader}>
 				Channels
 			</div>,
-			...this.props.ChannelStore!.memberships.sort((a, b) => a.channel.channel_name.toLowerCase() < b.channel.channel_name.toLowerCase() ? -1 : 1).map((membership) => {
+			...this.props.ChannelStore!.memberships.slice().map((membership) => {
 				const classNames = [styles.channel];
 				if (membership.channel.id === this.props.ChannelStore!.activeId) {
 					classNames.push(styles.activeChannel);
@@ -107,19 +105,28 @@ export class Sidebar extends React.Component<IProps, IState> {
 
 				return (
 					<Link
+						id={`sidebar-channel-${membership.channel.id}`}
 						key={membership.channel.id}
-						className={classNames.join(" ")}
+						className={classes(...classNames)}
 						to={`/channels/${membership.channel.id}`}
 						onClick={() => {
 							this.props.ChannelStore!.setActiveChannel(membership.channel.id);
 						}}
-						>
+					>
 						<div className={styles.channelName}>
 							<div className={styles.icon}>
 								<ChannelIcon membership={membership}/>
 							</div>
-							{membership.channel.channel_name}
+							<span>
+								{membership.channel.channel_name}
+							</span>
+
 						</div>
+						{
+							this.props.MessageStore!.unReads[membership.channel.id] &&
+							this.props.MessageStore!.unReads[membership.channel.id] > 0 &&
+							<Badge appearance="important" max={99}>{this.props.MessageStore!.unReads[membership.channel.id]}</Badge>
+						}
 					</Link>
 				)
 			})
@@ -137,34 +144,37 @@ export class Sidebar extends React.Component<IProps, IState> {
 							autoHide: "leave",
 							autoHideDelay: 300
 						},
-						callbacks: {
-							onScroll: (event) => {
-								if (this.listRef) {
-									const y = (event!.currentTarget! as any).scrollTop;
-									this.listRef.scrollTo(y);
-								}
-							},
-						},
+						// callbacks: {
+						// 	onScroll: (event) => {
+						// 		if (this.listRef.current) {
+						// 			const y = (event!.currentTarget! as any).scrollTop;
+						// 			this.listRef.current.scrollTo(y);
+						// 		}
+						// 	},
+						// },
 					}}>
-						<AutoSizer>
-							{({height, width}) => (
-								<List
-									className={"list"}
-									width={width}
-									height={height}
-									itemCount={items.length}
-									ref={(elem) => this.listRef = elem}
-								>
-									{
-										React.forwardRef((props, ref: any) => (
-											<div ref={ref} style={props.style}>
-												{items[props.index]}
-											</div>
-										))
-									}
-								</List>
-							)}
-						</AutoSizer>
+						<div>
+							{items}
+						</div>
+						{/*<AutoSizer>*/}
+						{/*	{({height, width}) => (*/}
+						{/*		<List*/}
+						{/*			className={"list"}*/}
+						{/*			width={width}*/}
+						{/*			height={height}*/}
+						{/*			itemCount={items.length}*/}
+						{/*			ref={this.listRef}*/}
+						{/*		>*/}
+						{/*			{*/}
+						{/*				React.forwardRef((props, ref: any) => (*/}
+						{/*					<div ref={ref} style={props.style}>*/}
+						{/*						{items[props.index]}*/}
+						{/*					</div>*/}
+						{/*				))*/}
+						{/*			}*/}
+						{/*		</List>*/}
+						{/*	)}*/}
+						{/*</AutoSizer>*/}
 					</OverlayScrollbarsComponent>
 				</div>
 			</div>

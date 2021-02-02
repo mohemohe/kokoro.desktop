@@ -4,9 +4,11 @@ import {IMessageEntity} from "kokoro-io/dist/src/lib/IPuripara";
 import {style} from "typestyle";
 import {Embed} from "./Embed";
 import { Prism } from "./Prism";
+import electron from "electron";
 
 export interface IProps {
 	message: IMessageEntity;
+	previous: IMessageEntity | null;
 }
 
 const styles = {
@@ -25,6 +27,15 @@ const styles = {
 			},
 		},
 	}),
+	leftContainer: style({
+		width: 40,
+		height: "auto",
+		$nest: {
+			"& img": {
+				borderRadius: 4,
+			},
+		},
+	}),
 	rightContainer: style({
 		width: 0,
 		flex: 1,
@@ -39,6 +50,9 @@ const styles = {
 	}),
 	body: style({
 		$nest: {
+			"& img": {
+				maxWidth: "100%",
+			},
 			"& pre": {
 				overflowX: "auto",
 			},
@@ -53,6 +67,16 @@ const styles = {
 };
 
 export class Message extends React.Component<IProps, {}> {
+	private get shouldHideInfo() {
+		return (
+			this.props.previous &&
+			this.props.previous.profile.id === this.props.message.profile.id &&
+			this.props.previous.display_name === this.props.message.display_name &&
+			this.props.previous.avatar === this.props.message.avatar &&
+			new Date(this.props.message.published_at).getTime() - new Date(this.props.previous.published_at).getTime() < 180000 // NOTE: 180sec
+		);
+	}
+
 	public render() {
 		const {message} = this.props;
 		if (!message) {
@@ -60,19 +84,34 @@ export class Message extends React.Component<IProps, {}> {
 		}
 		return (
 			<div className={styles.root}>
-				<div>
-					<img src={message.avatar} alt={message.display_name}/>
+				<div className={styles.leftContainer}>
+					{!this.shouldHideInfo && <img src={message.avatar} alt={message.display_name}/>}
 				</div>
 				<div className={styles.rightContainer}>
-					<div>
-						<span className={styles.name}>{message.display_name}</span> <span className={styles.date}>{new Date(message.published_at).toLocaleString()}</span>
-					</div>
+					{!this.shouldHideInfo && (
+						<div>
+							<span className={styles.name}>{message.display_name}</span> <span className={styles.date}>{new Date(message.published_at).toLocaleString()}</span>
+						</div>
+					)}
 					<ReactMarkdown
 						className={styles.body}
 						source={message.raw_content}
 						escapeHtml={true}
 						renderers={{
-							link: props => <a href={props.href} target="_blank">{props.children}</a>,
+							link: (props) => (
+								<a
+									href={props.href}
+									onClick={(event) => {
+										event.preventDefault();
+										event.stopPropagation();
+
+										// TODO: 別channelとかのアプリ内リンクを考慮する必要がある
+										electron.shell.openExternal(props.href);
+									}}
+								>
+									{props.children}
+								</a>
+							),
 							code: Prism,
 						}}
 					/>

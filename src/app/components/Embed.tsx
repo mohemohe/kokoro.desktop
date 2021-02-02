@@ -72,7 +72,12 @@ export class Embed extends React.Component<IProps, {}> {
 								}
 								return (
 									<span className={styles.mediaContainer} key={index} >
-										<img src={media.thumbnail.url} className={classNames.join(" ")}/>
+										<img
+											className={classNames.join(" ")}
+											src={media.thumbnail.url}
+											width={media.thumbnail.width}
+											height={media.thumbnail.height}
+										/>
 									</span>
 								);
 							})}
