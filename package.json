@@ -1,6 +1,6 @@
 {
   "name": "kokoro.desktop",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "dist/main.js",
   "repository": "ssh://git@github.com/mohemohe/kokoro.desktop.git",
   "author": "mohemohe <mohemohe@ghippos.net>",
